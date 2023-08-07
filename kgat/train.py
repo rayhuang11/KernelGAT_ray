@@ -155,10 +155,10 @@ if __name__ == "__main__":
     bert_model = BertForSequenceEncoder.from_pretrained(args.bert_pretrain)
     if args.postpretrain:
         model_dict = bert_model.state_dict()
-        pretrained_dict = torch.load(args.postpretrain)['model']
+        pretrained_dict = torch.load(args.postpretrain, map_location=torch.device('cpu'))['model']
         pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict}
         model_dict.update(pretrained_dict)
     ori_model = inference_model(bert_model, args)
     model = nn.DataParallel(ori_model)
-    model = model.cuda()
+    model = model.cpu()  # changed from cuda
     train_model(model, ori_model, args, trainset_reader, validset_reader)
