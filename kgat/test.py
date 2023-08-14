@@ -20,6 +20,9 @@ from models import inference_model
 
 logger = logging.getLogger(__name__)
 
+# Added by Ray
+def logits_to_probs(logits):
+    return F.softmax(logits, dim=1)
 
 
 def eval_model(model, label_list, validset_reader, outdir, name):
@@ -28,7 +31,9 @@ def eval_model(model, label_list, validset_reader, outdir, name):
     with open(outpath, "w") as f:
         for index, data in enumerate(validset_reader):
             inputs, ids = data
-            logits = model(inputs)
+            logits = model(inputs) 
+            print(logits)
+            print(logits_to_probs(logits))
             preds = logits.max(1)[1].tolist()
             assert len(preds) == len(ids)
             for step in range(len(preds)):
@@ -65,7 +70,8 @@ if __name__ == "__main__":
 
     if not os.path.exists(args.outdir):
         os.mkdir(args.outdir)
-    args.cuda = not args.no_cuda and torch.cuda.is_available()
+    #args.cuda = not args.no_cuda and torch.cuda.is_available()
+    args.cuda = False
     logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s', level=logging.DEBUG,
                         datefmt='%d-%m-%Y %H:%M:%S')
     logger.info(args)
@@ -79,11 +85,12 @@ if __name__ == "__main__":
     validset_reader = DataLoaderTest(args.test_path, label_map, tokenizer, args, batch_size=args.batch_size)
     logger.info('initializing estimator model')
     bert_model = BertForSequenceEncoder.from_pretrained(args.bert_pretrain)
-    bert_model = bert_model.cuda()
+    bert_model = bert_model.cpu()
     bert_model.eval()
     model = inference_model(bert_model, args)
-    model.load_state_dict(torch.load(args.checkpoint)['model'])
-    model = model.cuda()
+    #model.load_state_dict(torch.load(args.checkpoint)['model'])
+    model.load_state_dict(torch.load(args.checkpoint, map_location=torch.device('cpu'))['model'])
+    #model = model.cpu()
     model.eval()
     eval_model(model, label_list, validset_reader, args.outdir, args.name)
     model.eval()

@@ -84,8 +84,7 @@ def tok2int_list(src_list, tokenizer, max_seq_length, max_seq_size=-1):
 class DataLoader(object):
     ''' For data iteration '''
 
-    def __init__(self, data_path, label_map, tokenizer, args, test=False, cuda=True, batch_size=64):
-        self.cuda = cuda
+    def __init__(self, data_path, label_map, tokenizer, args, test=False, batch_size=64):
 
         self.batch_size = batch_size
         self.tokenizer = tokenizer
@@ -179,11 +178,12 @@ class DataLoader(object):
                 torch.LongTensor(seg_padding_inputs)).view(-1, self.evi_num, self.max_len)
             lab_tensor = Variable(
                 torch.LongTensor(labels))
-            if self.cuda:
+            #if self.cuda:
+            """
                 inp_tensor_input = inp_tensor_input.cuda()
                 msk_tensor_input = msk_tensor_input.cuda()
                 seg_tensor_input = seg_tensor_input.cuda()
-                lab_tensor = lab_tensor.cuda()
+                lab_tensor = lab_tensor.cuda()"""
             self.step += 1
             return (inp_tensor_input, msk_tensor_input, seg_tensor_input), lab_tensor
         else:
@@ -198,8 +198,8 @@ class DataLoader(object):
 class DataLoaderTest(object):
     ''' For data iteration '''
 
-    def __init__(self, data_path, label_map, tokenizer, args, cuda=True, batch_size=64):
-        self.cuda = cuda
+    def __init__(self, data_path, label_map, tokenizer, args, batch_size=64):
+        #self.cuda = cuda
 
         self.batch_size = batch_size
         self.tokenizer = tokenizer
@@ -285,12 +285,12 @@ class DataLoaderTest(object):
                 torch.LongTensor(msk_padding_inputs))
             seg_tensor_input = Variable(
                 torch.LongTensor(seg_padding_inputs))
-
+            """
             if self.cuda:
                 inp_tensor_input = inp_tensor_input.cuda()
                 msk_tensor_input = msk_tensor_input.cuda()
                 seg_tensor_input = seg_tensor_input.cuda()
-
+            """
             self.step += 1
             return (inp_tensor_input, msk_tensor_input, seg_tensor_input), ids
         else:
